@@ -383,19 +383,19 @@
             </div>
 
 
-            <div class="summary-row">
+<div class="summary-row">
 
-                <span class="summary-label">
-                    Tax:
-                </span>
+    <span class="summary-label">
+        Tax ({{ number_format($invoice->tax, 2) }}%):
+    </span>
 
-                <span class="summary-value">
-                    ${{ number_format($invoice->tax, 2) }}
-                </span>
+    <span class="summary-value">
+        ${{ number_format($invoice->tax_amount, 2) }}
+    </span>
 
-                <div class="clearfix"></div>
+    <div class="clearfix"></div>
 
-            </div>
+</div>
 
 
             <div class="summary-row total">
