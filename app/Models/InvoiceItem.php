@@ -14,13 +14,13 @@ class InvoiceItem extends Model
         'description',
         'quantity',
         'unit_price',
-        'total'
+        'total',
     ];
 
     protected $casts = [
         'quantity' => 'integer',
         'unit_price' => 'decimal:2',
-        'total' => 'decimal:2'
+        'total' => 'decimal:2',
     ];
 
     public function invoice()
@@ -35,11 +35,15 @@ class InvoiceItem extends Model
         });
 
         static::saved(function ($item) {
-            $item->invoice->updateTotals();
+            if ($item->invoice) {
+                $item->invoice->updateTotals();
+            }
         });
 
         static::deleted(function ($item) {
-            $item->invoice->updateTotals();
+            if ($item->invoice) {
+                $item->invoice->updateTotals();
+            }
         });
     }
 }

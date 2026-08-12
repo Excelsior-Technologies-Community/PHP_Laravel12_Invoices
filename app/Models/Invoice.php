@@ -20,7 +20,7 @@ class Invoice extends Model
         'tax',
         'total',
         'status',
-        'notes'
+        'notes',
     ];
 
     protected $casts = [
@@ -28,7 +28,7 @@ class Invoice extends Model
         'due_date' => 'date',
         'subtotal' => 'decimal:2',
         'tax' => 'decimal:2',
-        'total' => 'decimal:2'
+        'total' => 'decimal:2',
     ];
 
     public function items()
@@ -38,8 +38,14 @@ class Invoice extends Model
 
     public function updateTotals()
     {
-        $this->subtotal = $this->items->sum('total');
+        $this->load('items');
+
+        $this->subtotal = $this->items->sum(function ($item) {
+            return $item->quantity * $item->unit_price;
+        });
+
         $this->total = $this->subtotal + $this->tax;
+
         $this->saveQuietly();
     }
 }
