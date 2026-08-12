@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Invoice extends Model
 {
@@ -11,6 +12,7 @@ class Invoice extends Model
 
     protected $fillable = [
         'invoice_number',
+        'public_token',
         'customer_name',
         'customer_email',
         'customer_phone',
@@ -36,6 +38,21 @@ class Invoice extends Model
         return $this->hasMany(InvoiceItem::class);
     }
 
+    /**
+     * Generate a public token automatically.
+     */
+    protected static function booted()
+    {
+        static::creating(function ($invoice) {
+            if (!$invoice->public_token) {
+                $invoice->public_token = Str::random(48);
+            }
+        });
+    }
+
+    /**
+     * Calculate invoice subtotal and total.
+     */
     public function updateTotals()
     {
         $this->load('items');
@@ -44,8 +61,20 @@ class Invoice extends Model
             return $item->quantity * $item->unit_price;
         });
 
-        $this->total = $this->subtotal + $this->tax;
+        $taxPercentage = (float) $this->tax;
+
+        $taxAmount = ($this->subtotal * $taxPercentage) / 100;
+
+        $this->total = $this->subtotal + $taxAmount;
 
         $this->saveQuietly();
+    }
+
+    /**
+     * Get calculated tax amount.
+     */
+    public function getTaxAmountAttribute()
+    {
+        return ((float) $this->subtotal * (float) $this->tax) / 100;
     }
 }

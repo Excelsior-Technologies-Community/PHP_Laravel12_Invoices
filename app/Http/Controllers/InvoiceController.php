@@ -7,6 +7,8 @@ use App\Models\InvoiceItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Mail\InvoiceMail;
+use Illuminate\Support\Facades\Mail;
 
 class InvoiceController extends Controller
 {
@@ -105,20 +107,22 @@ class InvoiceController extends Controller
             'customer_phone' => 'nullable|string|max:20',
             'invoice_date' => 'required|date',
             'due_date' => 'required|date|after_or_equal:invoice_date',
-            'tax' => 'nullable|numeric|min:0',
+            'tax' => 'nullable|numeric|min:0|max:100',
+            'status' => 'required|in:draft,sent,paid,overdue',
             'notes' => 'nullable|string',
+
             'items' => 'required|array|min:1',
             'items.*.description' => 'required|string',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.unit_price' => 'required|numeric|min:0',
         ]);
-
         // Generate invoice number
         $invoiceNumber = 'INV-' . date('Y') . '-' .
             Str::padLeft(Invoice::count() + 1, 5, '0');
 
         $invoice = Invoice::create([
             'invoice_number' => $invoiceNumber,
+            'public_token' => Str::random(64),
             'customer_name' => $validated['customer_name'],
             'customer_email' => $validated['customer_email'],
             'customer_phone' => $validated['customer_phone'] ?? null,
@@ -128,6 +132,7 @@ class InvoiceController extends Controller
             'notes' => $validated['notes'] ?? null,
             'subtotal' => 0,
             'total' => 0,
+            'status' => $validated['status'] ?? 'draft',
         ]);
 
         foreach ($validated['items'] as $item) {
@@ -294,5 +299,32 @@ class InvoiceController extends Controller
         return $pdf->download(
             $invoice->invoice_number . '.pdf'
         );
+    }
+
+    /**
+     * Send invoice via email.
+     */
+    public function sendEmail(Invoice $invoice)
+    {
+        $invoice->load('items');
+
+        Mail::to($invoice->customer_email)
+            ->send(new InvoiceMail($invoice));
+
+        return redirect()
+            ->route('invoices.show', $invoice)
+            ->with('success', 'Invoice sent successfully to ' . $invoice->customer_email);
+    }
+
+    /**
+     * Display invoice publicly.
+     */
+    public function publicInvoice(string $token)
+    {
+        $invoice = Invoice::where('public_token', $token)
+            ->with('items')
+            ->firstOrFail();
+
+        return view('invoices.public', compact('invoice'));
     }
 }
