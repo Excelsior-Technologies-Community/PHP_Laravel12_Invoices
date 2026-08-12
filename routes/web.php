@@ -8,4 +8,19 @@ Route::get('/', function () {
 });
 
 Route::resource('invoices', InvoiceController::class);
-Route::post('/invoices/{invoice}/status', [InvoiceController::class, 'updateStatus'])->name('invoices.status');
+
+Route::post(
+    '/invoices/{invoice}/status',
+    [InvoiceController::class, 'updateStatus']
+)->name('invoices.status');
+
+/*
+|--------------------------------------------------------------------------
+| PDF Download
+|--------------------------------------------------------------------------
+*/
+
+Route::get(
+    '/invoices/{invoice}/pdf',
+    [InvoiceController::class, 'downloadPdf']
+)->name('invoices.pdf');

@@ -7,16 +7,46 @@
     <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
         <h2 class="text-xl font-semibold text-gray-800">Invoice #{{ $invoice->invoice_number }}</h2>
         <div class="flex space-x-2">
-            <a href="{{ route('invoices.edit', $invoice) }}" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
-                <i class="fas fa-edit mr-2"></i>Edit
+
+            {{-- PDF --}}
+            <a href="{{ route('invoices.pdf', $invoice) }}"
+                class="bg-purple-500 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded">
+
+                <i class="fas fa-file-pdf mr-2"></i>
+                PDF
+
             </a>
-            <form action="{{ route('invoices.destroy', $invoice) }}" method="POST" class="inline">
+
+
+            {{-- Edit --}}
+            <a href="{{ route('invoices.edit', $invoice) }}"
+                class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded">
+
+                <i class="fas fa-edit mr-2"></i>
+                Edit
+
+            </a>
+
+
+            {{-- Delete --}}
+            <form action="{{ route('invoices.destroy', $invoice) }}"
+                method="POST"
+                class="inline">
+
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" onclick="return confirm('Are you sure?')">
-                    <i class="fas fa-trash mr-2"></i>Delete
+
+                <button type="submit"
+                    class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                    onclick="return confirm('Are you sure?')">
+
+                    <i class="fas fa-trash mr-2"></i>
+                    Delete
+
                 </button>
+
             </form>
+
         </div>
     </div>
 
@@ -39,7 +69,7 @@
                 <p class="text-gray-600">{{ $invoice->customer_name }}</p>
                 <p class="text-gray-600">{{ $invoice->customer_email }}</p>
                 @if($invoice->customer_phone)
-                    <p class="text-gray-600">{{ $invoice->customer_phone }}</p>
+                <p class="text-gray-600">{{ $invoice->customer_phone }}</p>
                 @endif
             </div>
             <div>
